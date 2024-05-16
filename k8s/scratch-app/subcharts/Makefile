@@ -32,3 +32,4 @@ repos:
 	helm repo add hashicorp https://helm.releases.hashicorp.com;
 	helm repo add bitnami https://charts.bitnami.com/bitnami;
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts;
+	helm repo add hashicorp https://helm.releases.hashicorp.com
