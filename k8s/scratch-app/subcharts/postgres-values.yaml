@@ -1,0 +1,13 @@
+fullnameOverride: postgres-svc
+primary:
+  service:
+    type: NodePort
+  initdb:
+    scripts:
+      000_init.sql: |
+        CREATE DATABASE testdb;
+auth:
+  username: "testuser"
+  password: "testpassword"
+  database: "testdb"
+

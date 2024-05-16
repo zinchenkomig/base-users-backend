@@ -1,0 +1,7 @@
+server:
+  ingress:
+    enabled: true
+    hosts:
+      - prometheus.info
+    path: /
+

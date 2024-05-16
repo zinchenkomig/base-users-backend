@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migration
+spec:
+  template:
+    spec:
+      containers:
+      - name: migration 
+        image: zinchenkomig/base_users:0.1.1
+        envFrom:
+          - secretRef:
+              name: secretkv
+        env:
+        - name: BASE_USERS_DB_ADDRESS
+          value: postgres-svc
+        - name: JAEGER_BACKEND
+          value: "jaeger-svc-collector"
+        command: ["alembic", "upgrade", "head"]  # Run Alembic migration
+      restartPolicy: Never
+

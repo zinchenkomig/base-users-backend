@@ -1,0 +1,22 @@
+fullnameOverride: "jaeger-svc"
+provisionDataStore:
+  cassandra: false
+  elasticsearch: false
+  kafka: false
+
+allInOne:
+  enabled: true
+  ingress:
+    enabled: true
+    hosts:
+      - jaeger.info
+
+storage:
+  type: memory
+agent:
+  enabled: false
+collector:
+  enabled: false
+query:
+  enabled: false
+
