@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: zinchenkomig/base_users
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Override the image tag whose default is the chart appVersion.
   tag: "latest"
 

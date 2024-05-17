@@ -55,6 +55,7 @@ app.add_route("/metrics", handle_metrics)
 async def ping():
     return 'pong'
 
+
 @app.get('/email')
 async def get_email(user: CurrentUserDep):
     return user.email
