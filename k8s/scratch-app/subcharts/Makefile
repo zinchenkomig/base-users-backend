@@ -12,7 +12,7 @@ vault:
 	helm upgrade -i vault hashicorp/vault -f vault/vault-values.yaml
 
 vault-operator:
-    HTTPS_PROXY=140.99.122.244:999 helm pull hashicorp/vault-secrets-operator --version 0.6.0
+	HTTPS_PROXY=140.99.122.244:999 helm pull hashicorp/vault-secrets-operator --version 0.6.0
 	helm upgrade -i vault-secrets-operator vault-secrets-operator-0.6.0.tgz --values vault/vault-secrets-operator-values.yaml
 
 pg:
