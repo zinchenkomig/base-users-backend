@@ -55,7 +55,7 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts: 
-    - host: api.app.info
+    - host: api.zinchenkomig.com
       paths:
         - path: /
           serviceName: bu
