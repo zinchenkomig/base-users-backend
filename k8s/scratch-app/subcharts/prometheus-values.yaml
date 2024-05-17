@@ -2,6 +2,6 @@ server:
   ingress:
     enabled: true
     hosts:
-      - prometheus.info
+      - prometheus.zinchenkomig.com
     path: /
 

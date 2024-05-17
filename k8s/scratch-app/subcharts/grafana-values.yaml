@@ -2,4 +2,4 @@ ingress:
   enabled: true
   path: /
   hosts:
-   - grafana.info
+   - grafana.zinchenkomig.com

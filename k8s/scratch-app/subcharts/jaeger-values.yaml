@@ -9,7 +9,7 @@ allInOne:
   ingress:
     enabled: true
     hosts:
-      - jaeger.info
+      - jaeger.zinchenkomig.com
 
 storage:
   type: memory
