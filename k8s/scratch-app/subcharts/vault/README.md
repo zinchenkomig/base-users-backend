@@ -14,7 +14,7 @@ Then inside the vault shell login with root token
 vault login
 
 Then run these commands:
-
+```bash
 vault auth enable kubernetes
 vault write auth/kubernetes/config \
 	kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443"
@@ -31,6 +31,8 @@ vault write auth/kubernetes/role/k8s_auth_role \
 	audience=vault \
 	ttl=24h
 exit
+```
+
 
 4. Now we need to install the vault-secrets-operator
 helm install vault-secrets-operator hashicorp/vault-secrets-operator --values vault-secrets-operator-values.yaml
