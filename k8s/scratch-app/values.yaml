@@ -64,7 +64,7 @@ ingress:
           pathType: ImplementationSpecific
 
   tls:
-    - secretName: zinchenkomig-tls
+    - secretName: zinchenkomig-back-tls
       hosts:
         - api.zinchenkomig.com
   #  - secretName: chart-example-tls
