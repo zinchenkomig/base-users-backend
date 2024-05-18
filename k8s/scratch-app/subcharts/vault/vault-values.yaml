@@ -1,7 +1,0 @@
-server:
-  ingress:
-    enabled: true
-    hostname: vault.zinchenkomig.com
-
-injector:
-  enabled: "false"
