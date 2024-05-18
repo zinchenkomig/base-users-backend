@@ -9,6 +9,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from starlette.middleware.cors import CORSMiddleware
 
+import enums
 from components.authentication.crud import get_user
 from components.authentication.dependencies import CurrentUserDep
 from components.authentication.router import auth_router
@@ -63,7 +64,7 @@ async def get_email(user: CurrentUserDep):
 
 @app.get('/check/username')
 async def check_username(username: str, async_session: AsyncSessionDep):
-    user = await get_user(async_session, username=username)
+    user = await get_user(async_session, username=username, origin=enums.UserOrigin.Internal.value)
     return user is not None
 
 
