@@ -7,20 +7,20 @@ helm install vault hashicorp/vault --values vault-values.yaml
 
 Initialization:
 ```bash
-kubectl exec --stdin=true --tty=true vault-server-0 -- vault operator init \
+kubectl exec --stdin=true --tty=true vault-0 -- vault operator init \
     -key-shares=1 \
     -key-threshold=1 \
     -format=json > cluster-keys.json
 # get the root and unseal tokens    
 
-kubectl exec --stdin=true --tty=true vault-server-0 -- vault operator unseal <unseal-token>
+kubectl exec --stdin=true --tty=true vault-0 -- vault operator unseal <unseal-token>
 ```
 Vault Unsealed
 3. Initialize role with policy
 First run:
 
 ```bash
-kubectl exec --stdin=true --tty=true vault-server-0 -- /bin/sh
+kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh
 ```
 
 Then inside the vault shell login with root token
