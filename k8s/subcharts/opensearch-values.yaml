@@ -1,0 +1,8 @@
+singleNode: true
+
+extraEnvs:
+  - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+    value: xaW4w1NIpl!
+
+podAnnotations:
+  fluentbit.io/exclude: "true"

@@ -5,3 +5,5 @@ server:
       - prometheus.zinchenkomig.com
     path: /
 
+podAnnotations:
+  fluentbit.io/exclude: "true"

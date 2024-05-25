@@ -20,3 +20,6 @@ collector:
 query:
   enabled: false
 
+podAnnotations:
+  fluentbit.io/exclude: "true"
+

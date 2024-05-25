@@ -1,6 +1,6 @@
 .PHONY : all uninstall-all vault pg grafana jaeger
 
-all: pg grafana prometheus jaeger
+all: pg grafana prometheus jaeger opensearch fluentbit
 
 uninstall-all:
 	helm uninstall postgres;
@@ -27,7 +27,15 @@ prometheus:
 jaeger:
 	helm upgrade jaeger jaegertracing/jaeger --version 3.0.7 -i -f jaeger-values.yaml
 
+fluentbit:
+	helm upgrade fluent-bit fluent/fluent-bit -i -f fluentbit-values.yaml
+
+opensearch:
+	helm upgrade osearch opensearch/opensearch -i -f opensearch-values.yaml
+
 repos:
+	helm repo add fluent https://fluent.github.io/helm-charts
+	helm repo add opensearch https://opensearch-project.github.io/helm-charts
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts;
 	helm repo add grafana https://grafana.github.io/helm-charts;
 	helm repo add hashicorp https://helm.releases.hashicorp.com;

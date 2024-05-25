@@ -5,3 +5,5 @@ ingress:
    - grafana.zinchenkomig.com
 persistence:
   enabled: true
+podAnnotations:
+  fluentbit.io/exclude: "true"

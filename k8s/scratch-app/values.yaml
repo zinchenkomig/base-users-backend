@@ -30,7 +30,8 @@ podAnnotations:
   prometheus.io/path: "/metrics"
   prometheus.io/port: "8000"
 
-podLabels: {}
+podLabels:
+  appName: "base-users-backend"
 
 podSecurityContext: {}
   # fsGroup: 2000

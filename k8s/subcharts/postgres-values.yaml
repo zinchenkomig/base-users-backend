@@ -6,6 +6,10 @@ primary:
     scripts:
       000_init.sql: |
         CREATE DATABASE testdb;
+
+podAnnotations:
+  fluentbit.io/exclude: "true"
+
 auth:
   username: "testuser"
   password: "testpassword"
