@@ -68,14 +68,13 @@ async def check_username(username: str, async_session: AsyncSessionDep):
     return user is not None
 
 
-# Service name is required for most backends
-resource = Resource(attributes={
-    SERVICE_NAME: settings.APP_NAME
-})
-
-provider = TracerProvider(resource=resource)
-processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=settings.JAEGER_BACKEND, insecure=True))
-provider.add_span_processor(processor)
-trace.set_tracer_provider(provider)
-
-FastAPIInstrumentor.instrument_app(app)
+if settings.IS_PROD:
+    # Service name is required for most backends
+    resource = Resource(attributes={
+        SERVICE_NAME: settings.APP_NAME
+    })
+    provider = TracerProvider(resource=resource)
+    processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=settings.JAEGER_BACKEND, insecure=True))
+    provider.add_span_processor(processor)
+    trace.set_tracer_provider(provider)
+    FastAPIInstrumentor.instrument_app(app)
