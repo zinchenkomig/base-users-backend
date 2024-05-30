@@ -88,4 +88,4 @@ jobs:
           script: |
             if cd backend; then git pull; else git clone https://github.com/zinchenkomig/base-users-backend.git backend; cd backend; fi
             cd k8s
-            helm upgrade backend scratch-app/ -i
+            KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade backend scratch-app/ -i
