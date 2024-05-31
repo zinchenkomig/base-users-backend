@@ -82,7 +82,7 @@ async def superuser_cookie(async_client, async_session):
                                                     'email': test_email})
     login_response = await async_client.post('/auth/token', data={'username': test_superuser,
                                                                   'password': test_password})
-    await async_session.execute(update(db.User).where(db.User.username == test_superuser).values(is_superuser=True))
+    await async_session.execute(update(db.User).where(db.User.username == test_superuser).values(roles=['admin']))
     await async_session.commit()
     return login_response.cookies
 
