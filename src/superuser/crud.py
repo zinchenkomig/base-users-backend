@@ -7,7 +7,7 @@ import json_schemes
 
 
 async def get_users(async_session: AsyncSession) -> List[db.User]:
-    users_resp = await async_session.execute(select(db.User).order_by(db.User.is_superuser.desc(), db.User.username))
+    users_resp = await async_session.execute(select(db.User).order_by(db.User.created_at.desc(), db.User.username))
     users = list(users_resp.scalars().all())
     return users
 

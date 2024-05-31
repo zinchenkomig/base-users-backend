@@ -9,12 +9,11 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from starlette.middleware.cors import CORSMiddleware
 
-import enums
-from components.authentication.crud import get_user
-from components.authentication.dependencies import CurrentUserDep
-from components.authentication.router import auth_router
-from components.superuser.router import superuser_router
-from components.user.router import user_router
+from src.authentication.crud import get_user
+from src.authentication.dependencies import CurrentUserDep
+from src.authentication.router import auth_router
+from src.superuser.router import superuser_router
+from src.user.router import user_router
 from dependencies import AsyncSessionDep
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
@@ -64,7 +63,7 @@ async def get_email(user: CurrentUserDep):
 
 @app.get('/check/username')
 async def check_username(username: str, async_session: AsyncSessionDep):
-    user = await get_user(async_session, username=username, origin=enums.UserOrigin.Internal.value)
+    user = await get_user(async_session, username=username)
     return user is not None
 
 

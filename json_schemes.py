@@ -20,13 +20,13 @@ class UserRead(BaseORM):
     id: uuid.UUID
     username: str
     email: Optional[str]
-    is_superuser: bool
+    roles: list[str]
 
 
 class UserReadTg(BaseORM):
     id: uuid.UUID
     username: str
-    is_superuser: bool
+    roles: list[str]
 
 
 class UserUpdate(BaseModel):

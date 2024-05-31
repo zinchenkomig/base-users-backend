@@ -4,7 +4,6 @@ from typing import Union, Dict, Any
 from fastapi import APIRouter, Response, Depends, HTTPException, status, Request, Body
 from fastapi.security import OAuth2PasswordRequestForm
 
-import enums
 from conf import settings
 from conf.secrets import tg_secret_token
 from db_models import User
@@ -12,12 +11,13 @@ from dependencies import AsyncSessionDep
 from json_schemes import UserCreate, UserRead, UserReadTg
 from . import crud
 from .security import verify_password, get_password_hash, create_access_token, is_tg_hash_valid
+from .roles import Role
 
 auth_router = APIRouter()
 
 
 async def authenticate_user(async_session, username: str, password: str) -> Union[User, bool]:
-    user = await crud.get_user(async_session, username, origin=enums.UserOrigin.Internal.value)
+    user = await crud.get_user(async_session, username=username)
     if user is None:
         return False
     if not verify_password(password, user.password):
@@ -38,8 +38,10 @@ async def login_for_access_token(response: Response,
         )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username,
-              "user_origin": enums.UserOrigin.Internal.value},
+        data={
+            "id": str(user.id),
+            "login": user.username,
+            "roles": user.roles},
         expires_delta=access_token_expires
     )
     response.set_cookie(key='login_token', value=access_token,
@@ -47,7 +49,6 @@ async def login_for_access_token(response: Response,
                         secure=settings.IS_SECURE_COOKIE,
                         httponly=True
                         )
-
     return user
 
 
@@ -60,28 +61,34 @@ async def auth_tg(response: Response, async_session: AsyncSessionDep, request: D
             headers={"WWW-Authenticate": "Bearer"},
         )
     username = request['username']
-    user = await crud.get_user(async_session, username, origin=enums.UserOrigin.TG.value)
+    tg_id = str(request['id'])
+    photo_url = request['photo_url']
+    user = await crud.get_user(async_session, tg_id=tg_id)
     if user is None:
         user = User(username=username,
-                    origin=enums.UserOrigin.TG.value,
                     email=None,
                     password=None,
+                    tg_id=tg_id,
                     is_active=True,
-                    photo_url=request['photo_url'],
+                    photo_url=photo_url,
+                    roles=[Role.Reader.value]
                     )
         user = await crud.new_user(async_session, user)
         await async_session.commit()
-        async_session.refresh(user)
+        await async_session.refresh(user)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": username,
-              "user_origin": enums.UserOrigin.TG.value},
+        data={
+            "id": str(user.id),
+            "login": username,
+            "roles": user.roles
+              },
         expires_delta=access_token_expires
     )
     response.set_cookie(key='login_token', value=access_token,
                         samesite=settings.SAME_SITE,
                         secure=settings.IS_SECURE_COOKIE,
-                        httponly=True
+                        httponly=settings.IS_SECURE_COOKIE
                         )
     return user
 
@@ -115,7 +122,7 @@ async def register(user_create: UserCreate, response: Response,
                     email=user_create.email,
                     password=hashed_pass,
                     is_active=True,
-                    origin=enums.UserOrigin.Internal.value)
+                    roles=[Role.Reader.value])
         await crud.new_user(async_session, user)
         await async_session.commit()
         response.status_code = status.HTTP_201_CREATED

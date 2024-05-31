@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from components.authentication.dependencies import CurrentUserDep
+from src.authentication.dependencies import CurrentUserDep
 
 user_router = APIRouter()
 
