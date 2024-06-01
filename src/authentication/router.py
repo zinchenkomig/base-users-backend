@@ -60,11 +60,14 @@ async def auth_tg(response: Response, async_session: AsyncSessionDep, request: D
             detail="Failed tg token verification",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    username = request['username']
-    tg_id = str(request['id'])
-    photo_url = request['photo_url']
-    first_name = request['first_name']
-    last_name = request['last_name']
+    username = request.get('username')
+    if request.get('id') is not None:
+        tg_id = str(request.get('id'))
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='telegram id not specified')
+    photo_url = request.get('photo_url')
+    first_name = request.get('first_name')
+    last_name = request.get('last_name')
     user = await crud.get_user(async_session, tg_id=tg_id)
     if user is None:
         user = User(username=username,
