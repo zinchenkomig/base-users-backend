@@ -21,6 +21,9 @@ class UserRead(BaseORM):
     username: str
     email: Optional[str]
     roles: list[str]
+    photo_url: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
 
 
 class UserReadTg(BaseORM):

@@ -63,9 +63,13 @@ async def auth_tg(response: Response, async_session: AsyncSessionDep, request: D
     username = request['username']
     tg_id = str(request['id'])
     photo_url = request['photo_url']
+    first_name = request['first_name']
+    last_name = request['last_name']
     user = await crud.get_user(async_session, tg_id=tg_id)
     if user is None:
         user = User(username=username,
+                    first_name=first_name,
+                    last_name=last_name,
                     email=None,
                     password=None,
                     tg_id=tg_id,
