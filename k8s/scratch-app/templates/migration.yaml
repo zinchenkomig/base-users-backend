@@ -8,9 +8,11 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets:
+        - name: yr-key
       containers:
       - name: migration 
-        image: zinchenkomig/base_users:0.1.1
+        image: cr.yandex/crp14m9keoja3jtgii9e/zinchenkomig/base_users:latest
         envFrom:
           - secretRef:
               name: secretkv
