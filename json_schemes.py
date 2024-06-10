@@ -35,4 +35,5 @@ class UserReadTg(BaseORM):
 class UserUpdate(BaseModel):
     username: str
     email: str
+    roles: list[str]
 
