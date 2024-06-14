@@ -1,5 +1,6 @@
 from typing import Annotated
 
+import fastapi
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
 from jose import jwt, JWTError, ExpiredSignatureError
@@ -10,10 +11,17 @@ from dependencies import AsyncSessionDep
 from . import crud
 import db_models as db
 
-apikey_cookie_getter = APIKeyCookie(name='login_token')
+apikey_cookie_getter = APIKeyCookie(name='login_token', auto_error=False)
 
 
-async def get_current_user(async_session: AsyncSessionDep, token=Depends(apikey_cookie_getter)) -> db.User:
+async def get_current_user(async_session: AsyncSessionDep, token=Depends(apikey_cookie_getter),
+                           fake_user: Annotated[str | None, fastapi.Header()] = None,
+                           fake_roles: Annotated[list[str] | None, fastapi.Header()] = None
+                           ) -> db.User:
+    if not settings.IS_PROD and fake_user is not None and fake_roles is not None:
+        user = await crud.get_user(async_session, username=fake_user)
+        user.roles = fake_roles
+        return user
     try:
         payload = jwt.decode(token, PASSWORD_ENCODING_SECRET, algorithms=[settings.ALGORITHM])
         user_id = payload.get("id")
