@@ -18,6 +18,9 @@ opentelemetry-exporter-otlp-proto-grpc==1.21.0
 opentelemetry-instrumentation-sqlalchemy==0.42b0
 opentelemetry-instrumentation-fastapi==0.42b0
 starlette-exporter==0.17.1
+google-api-python-client==2.133.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.0
 
 
 
