@@ -13,8 +13,8 @@ async def get_users(async_session: AsyncSession) -> List[db.User]:
 
 
 async def delete_user(async_session: AsyncSession, delete_user_id: str):
-    await async_session.execute(delete(db.User).where(db.User.id == delete_user_id))
+    await async_session.execute(delete(db.User).where(db.User.guid == delete_user_id))
 
 
 async def update_user(async_session: AsyncSession, update_user_id: str, new_user_params: json_schemes.UserUpdate):
-    await async_session.execute(update(db.User).where(db.User.id == update_user_id).values(**new_user_params.dict()))
+    await async_session.execute(update(db.User).where(db.User.guid == update_user_id).values(**new_user_params.dict()))

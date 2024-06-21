@@ -1,4 +1,5 @@
 import fastapi
+from fastapi import HTTPException
 from sqlalchemy import select
 
 from db_models import User
@@ -15,8 +16,9 @@ async def get_user(async_session, username=None, tg_id=None, user_id=None) -> Op
     if username is not None:
         query = select(User).filter_by(username=username).limit(1)
     if user_id is not None:
-        query = select(User).filter_by(id=user_id).limit(1)
+        query = select(User).filter_by(guid=user_id).limit(1)
 
+    # query = query.filter_by(is_verified=True)
     user_query_exec = await async_session.execute(query)
     user = user_query_exec.scalars().one_or_none()
     return user
@@ -33,3 +35,11 @@ async def check_is_user_exists(async_session, user_create):
 async def new_user(async_session, user):
     async_session.add(user)
     return user
+
+
+async def verify_user(async_session, user_guid):
+    user_query_exec = await async_session.execute(select(User).filter_by(guid=user_guid).limit(1))
+    user = user_query_exec.scalars().one_or_none()
+    if user is None:
+        raise HTTPException(status_code=404)
+    user.is_verified = True

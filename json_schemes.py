@@ -16,8 +16,12 @@ class UserCreate(BaseModel):
     password: str
 
 
+class UserGUID(BaseModel):
+    user_guid: uuid.UUID
+
+
 class UserRead(BaseORM):
-    id: uuid.UUID
+    guid: uuid.UUID
     username: str
     email: Optional[str]
     roles: list[str]
@@ -27,7 +31,7 @@ class UserRead(BaseORM):
 
 
 class UserReadTg(BaseORM):
-    id: uuid.UUID
+    guid: uuid.UUID
     username: str
     roles: list[str]
 

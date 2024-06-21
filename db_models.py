@@ -10,7 +10,7 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = 'users'
 
-    id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    guid: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     username = Column(Text, nullable=False, default='')
     first_name = Column(Text, nullable=True)
     last_name = Column(Text, nullable=True)

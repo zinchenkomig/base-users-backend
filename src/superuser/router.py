@@ -20,20 +20,19 @@ async def get_users(async_session: AsyncSessionDep) -> List[UserRead]:
 
 
 @superuser_router.post('/users/delete')
-async def delete_user(async_session: AsyncSessionDep, user_id: str):
+async def delete_user(async_session: AsyncSessionDep, guid: str):
 
     try:
-        await crud.delete_user(async_session, delete_user_id=user_id)
+        await crud.delete_user(async_session, delete_user_id=guid)
         await async_session.commit()
     except Exception as e:
-        print(e)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @superuser_router.post('/users/update')
-async def update_user(async_session: AsyncSessionDep, user_id: str, new_user_params: json_schemes.UserUpdate):
+async def update_user(async_session: AsyncSessionDep, guid: str, new_user_params: json_schemes.UserUpdate):
     try:
-        await crud.update_user(async_session, update_user_id=user_id, new_user_params=new_user_params)
+        await crud.update_user(async_session, update_user_id=guid, new_user_params=new_user_params)
     except sqlalchemy.exc.IntegrityError:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Username conflict')
     await async_session.commit()

@@ -24,8 +24,7 @@ async def get_current_user(async_session: AsyncSessionDep, token=Depends(apikey_
         return user
     try:
         payload = jwt.decode(token, PASSWORD_ENCODING_SECRET, algorithms=[settings.ALGORITHM])
-        user_id = payload.get("id")
-        print(user_id)
+        user_id = payload.get("guid")
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
