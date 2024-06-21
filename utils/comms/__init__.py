@@ -1,2 +1,2 @@
-from .email_sender import Gmail, EmailSender
+from .email_sender import Gmail, EmailSender, MockSender
 

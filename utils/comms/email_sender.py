@@ -29,6 +29,15 @@ class EmailSender(abc.ABC):
         return None
 
 
+class MockSender(EmailSender):
+
+    def send(self, to: str, subject: str, message_text: str):
+        logging.info(f"Sending email to: {to}\n"
+                     f"Subject: {subject}\n"
+                     f"Text: {message_text}")
+        return
+
+
 class Gmail(EmailSender):
     _scopes = [
         "https://www.googleapis.com/auth/gmail.send",

@@ -28,7 +28,9 @@ def get_sync_session():
 
 
 def get_email_sender():
-    return comms.Gmail(token=settings.GMAIL_API_TOKEN, from_="zinchenkomig.sup@gmail.com")
+    if settings.IS_PROD:
+        return comms.Gmail(token=settings.GMAIL_API_TOKEN, from_="zinchenkomig.sup@gmail.com")
+    return comms.MockSender()
 
 
 AsyncSessionDep = Annotated[AsyncSession, Depends(get_async_session)]
