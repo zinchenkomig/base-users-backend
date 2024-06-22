@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -63,6 +65,14 @@ async def get_email(user: CurrentUserDep):
 async def check_username(username: str, async_session: AsyncSessionDep):
     user = await get_user(async_session, username=username)
     return user is not None
+
+
+@app.get('/test/logs')
+async def check_username():
+    logging.debug("debug level log")
+    logging.info("info level log")
+    logging.warning("warn level log")
+    logging.error("error level log")
 
 
 if settings.IS_PROD:
