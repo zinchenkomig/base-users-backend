@@ -21,7 +21,7 @@ starlette-exporter==0.17.1
 google-api-python-client==2.133.0
 google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.0
-
+pyyaml==6.0.1
 
 
 
