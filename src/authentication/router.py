@@ -66,10 +66,10 @@ async def auth_tg(response: Response, async_session: AsyncSessionDep, request: D
             headers={"WWW-Authenticate": "Bearer"},
         )
     username = request.get('username')
-    if request.get('guid') is not None:
-        tg_id = str(request.get('guid'))
+    if request.get('id') is not None:
+        tg_id = str(request.get('id'))
     else:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='telegram guid not specified')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='telegram id not specified')
     photo_url = request.get('photo_url')
     first_name = request.get('first_name')
     last_name = request.get('last_name')
