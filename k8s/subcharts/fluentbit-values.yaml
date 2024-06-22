@@ -24,7 +24,7 @@ config:
         Name opensearch
         Match kube.*
         Host opensearch-cluster-master
-        Logstash_Format Off
+        Logstash_Format On
         Retry_Limit 2
         HTTP_User admin
         HTTP_Passwd xaW4w1NIpl!
