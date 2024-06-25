@@ -9,11 +9,11 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from starlette.middleware.cors import CORSMiddleware
 
-from src.authentication.crud import get_user
-from src.authentication.dependencies import CurrentUserDep
-from src.authentication.router import auth_router
-from src.superuser.router import superuser_router
-from src.user.router import user_router
+from src.repo.user import get_user
+from src.dependencies import CurrentUserDep
+from src.service.auth import auth_router
+from src.service.superuser import superuser_router
+from src.service.user import user_router
 from dependencies import AsyncSessionDep
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 

@@ -28,6 +28,7 @@ class UserRead(BaseORM):
     photo_url: Optional[str]
     first_name: Optional[str]
     last_name: Optional[str]
+    is_verified: bool
 
 
 class UserReadTg(BaseORM):
@@ -36,8 +37,14 @@ class UserReadTg(BaseORM):
     roles: list[str]
 
 
-class UserUpdate(BaseModel):
+class SuperuserUserUpdate(BaseModel):
     username: str
     email: str
     roles: list[str]
+
+
+class UserUpdate(BaseModel):
+    email: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
 

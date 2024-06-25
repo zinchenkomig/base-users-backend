@@ -1,23 +1,64 @@
-from datetime import timedelta
-from typing import Union, Dict, Any
+import hashlib
+import hmac
+from copy import copy
+from datetime import datetime, timedelta
+from typing import Dict, Any
+from typing import Union
 
-from fastapi import APIRouter, Response, Depends, HTTPException, status, Request, Body
+from fastapi import APIRouter, Response, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from jose import jwt
+from passlib.context import CryptContext
 
 from conf import settings
+from conf.secrets import PASSWORD_ENCODING_SECRET
 from conf.secrets import tg_secret_token
 from db_models import User
 from dependencies import AsyncSessionDep, EmailSenderDep
 from json_schemes import UserCreate, UserRead, UserReadTg, UserGUID
-from . import crud
-from .security import verify_password, get_password_hash, create_access_token, is_tg_hash_valid
-from .roles import Role
+from src.repo import user as user_repo
+from src.roles import Role
 
 auth_router = APIRouter()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, PASSWORD_ENCODING_SECRET, algorithm=settings.ALGORITHM)
+    return encoded_jwt
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
+def get_data_string(data: dict):
+    sorted_data = sorted(data.items(), key=lambda x: x[0])
+    sorted_data_str = '\n'.join([f'{key}={val}' for key, val in sorted_data])
+    return sorted_data_str
+
+
+def is_tg_hash_valid(data: dict, tg_bot_token: str):
+    d = copy(data)
+    data_hash = d.pop('hash')
+    data_str = get_data_string(d)
+    secret_hashed = hashlib.sha256(tg_bot_token.encode())
+    one = hmac.new(key=secret_hashed.digest(), msg=data_str.encode(), digestmod='sha256')
+    return hmac.compare_digest(one.hexdigest(), data_hash)
 
 
 async def authenticate_user(async_session, username: str, password: str) -> Union[User, bool]:
-    user = await crud.get_user(async_session, username=username)
+    user = await user_repo.get_user(async_session, username=username)
     if user is None:
         return False
     if not verify_password(password, user.password):
@@ -73,7 +114,7 @@ async def auth_tg(response: Response, async_session: AsyncSessionDep, request: D
     photo_url = request.get('photo_url')
     first_name = request.get('first_name')
     last_name = request.get('last_name')
-    user = await crud.get_user(async_session, tg_id=tg_id)
+    user = await user_repo.get_user(async_session, tg_id=tg_id)
     if user is None:
         user = User(username=username,
                     first_name=first_name,
@@ -86,7 +127,7 @@ async def auth_tg(response: Response, async_session: AsyncSessionDep, request: D
                     roles=[Role.Reader.value],
                     is_verified=True
                     )
-        user = await crud.new_user(async_session, user)
+        user = await user_repo.new_user(async_session, user)
         await async_session.commit()
         await async_session.refresh(user)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -128,7 +169,7 @@ async def register(user_create: UserCreate, response: Response,
     :param async_session:
     :return:
     """
-    if await crud.check_is_user_exists(async_session, user_create):
+    if await user_repo.check_is_user_exists(async_session, user_create):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT)
 
     hashed_pass = get_password_hash(user_create.password)
@@ -138,7 +179,7 @@ async def register(user_create: UserCreate, response: Response,
                 is_verified=False,
                 is_active=True,
                 roles=[Role.Reader.value])
-    await crud.new_user(async_session, user)
+    await user_repo.new_user(async_session, user)
     await async_session.commit()
     await async_session.refresh(user)
     response.status_code = status.HTTP_201_CREATED
@@ -157,5 +198,5 @@ async def register(user_create: UserCreate, response: Response,
 
 @auth_router.post('/verify')
 async def verify_user(async_session: AsyncSessionDep, user: UserGUID):
-    await crud.verify_user(async_session, user.user_guid)
+    await user_repo.verify_user(async_session, user.user_guid)
     await async_session.commit()
