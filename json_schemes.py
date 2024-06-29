@@ -48,3 +48,11 @@ class UserUpdate(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
 
+
+class Email(BaseModel):
+    email: str
+
+
+class RecoverPassword(BaseModel):
+    new_password: str
+    token: str

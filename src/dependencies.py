@@ -45,7 +45,7 @@ async def get_current_user(async_session: AsyncSessionDep, token=Depends(apikey_
             detail=f"jwt error: {e}",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user = await user_repo.get_user(async_session, user_id=user_id)
+    user = await user_repo.get_user(async_session, user_guid=user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

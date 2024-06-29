@@ -67,6 +67,12 @@ async def check_username(username: str, async_session: AsyncSessionDep):
     return user is not None
 
 
+@app.get('/check/email')
+async def check_username(email: str, async_session: AsyncSessionDep):
+    user = await get_user(async_session, email=email)
+    return user is not None
+
+
 @app.get('/test/logs')
 async def check_username():
     logging.debug("debug level log")

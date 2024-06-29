@@ -102,7 +102,3 @@ class Gmail(EmailSender):
                                 f"Error: {str(err)}. "
                                 f"Attempt: {i}")
         return None
-
-
-if __name__ == '__main__':
-    print(Gmail.get_token_from_credentials('/Users/mihail/PycharmProjects/base-users/backend/utils/comms/google-zinchenkomig-sup-credentials.json'))
