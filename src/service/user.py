@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 import fastapi
 import sqlalchemy.exc
@@ -27,9 +28,11 @@ async def update_user(async_session: AsyncSessionDep,
                       new_user_params: json_schemes.UserUpdate,
                       current_user: CurrentUserDep):
     try:
+        if new_user_params.email == "":
+            new_user_params.email = None
         await user_repo.update_user(async_session, update_user_id=current_user.guid, new_user_params=new_user_params)
-    except sqlalchemy.exc.IntegrityError as err:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f'db conflict: {err.detail}; {err}')
+    except sqlalchemy.exc.IntegrityError:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f'db integrity error')
     await async_session.commit()
 
 
