@@ -17,8 +17,6 @@ spec:
           - secretRef:
               name: secretkv
         env:
-        - name: JAEGER_BACKEND
-          value: "jaeger-svc-collector"
         - name: BASE_USERS_DB_ADDRESS
           value: postgres-svc
         - name: JAEGER_BACKEND
