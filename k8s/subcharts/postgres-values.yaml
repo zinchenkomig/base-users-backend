@@ -5,13 +5,12 @@ primary:
   initdb:
     scripts:
       000_init.sql: |
-        CREATE DATABASE testdb;
+        CREATE DATABASE svc-db;
 
 podAnnotations:
   fluentbit.io/exclude: "true"
 
 auth:
-  username: "testuser"
-  password: "testpassword"
-  database: "testdb"
+  username: "service-user"
+  database: "svc-db"
 
