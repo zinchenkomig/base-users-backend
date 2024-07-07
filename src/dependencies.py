@@ -22,6 +22,8 @@ async def get_current_user(async_session: AsyncSessionDep, token=Depends(apikey_
                            ) -> db.User:
     if not settings.IS_PROD and fake_user is not None and fake_roles is not None:
         user = await user_repo.get_user(async_session, username=fake_user)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {fake_user} not found")
         user.roles = fake_roles.split(',')
         return user
     try:

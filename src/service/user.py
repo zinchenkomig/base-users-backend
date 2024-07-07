@@ -12,6 +12,7 @@ from dependencies import AsyncSessionDep, EmailSenderDep
 from json_schemes import UserRead
 from src.dependencies import CurrentUserDep
 from src.repo import user as user_repo
+from src.service import auth
 from src.service.auth import create_access_token, get_password_hash
 
 user_router = APIRouter()
@@ -76,4 +77,12 @@ async def forgot_password(async_session: AsyncSessionDep, data: json_schemes.Rec
     user_guid = payload.get('user_guid')
     user = await user_repo.get_user(async_session, user_guid=user_guid)
     user.password = get_password_hash(data.new_password)
+    await async_session.commit()
+
+
+@user_router.post('/change_password')
+async def change_password(async_session: AsyncSessionDep, user: CurrentUserDep, data: json_schemes.ChangePassword):
+    if not auth.verify_password(data.old_password, user.password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    user.password = data.new_password
     await async_session.commit()

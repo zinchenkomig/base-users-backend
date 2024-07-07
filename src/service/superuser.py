@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import sqlalchemy.exc
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -14,9 +14,9 @@ from src.dependencies import get_current_superuser
 superuser_router = APIRouter(dependencies=[Depends(get_current_superuser)])
 
 
-@superuser_router.get('/users/all')
-async def get_users(async_session: AsyncSessionDep) -> List[UserRead]:
-    return await user_repo.get_users(async_session)
+@superuser_router.get('/users')
+async def get_users(async_session: AsyncSessionDep, search: str | None = None, page: int = 1, limit: int = 20) -> List[UserRead]:
+    return await user_repo.get_users(async_session, search=search, page=page, limit=limit)
 
 
 @superuser_router.post('/users/delete')

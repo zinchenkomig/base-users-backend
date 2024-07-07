@@ -2,7 +2,6 @@ import abc
 import base64
 import json
 import logging
-from email.message import EmailMessage
 from email.mime.text import MIMEText
 
 from google.oauth2.credentials import Credentials

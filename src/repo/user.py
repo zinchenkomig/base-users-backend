@@ -1,7 +1,6 @@
 import fastapi
 from fastapi import HTTPException
-from sqlalchemy import select, delete, update
-
+from sqlalchemy import select, delete, update, func
 
 import db_models as models
 from typing import Optional
@@ -10,7 +9,8 @@ from typing import List
 import json_schemes
 
 
-async def get_user(async_session: AsyncSession, username=None, tg_id=None, user_guid=None, email=None) -> Optional[models.User]:
+async def get_user(async_session: AsyncSession, username=None, tg_id=None, user_guid=None, email=None) -> Optional[
+    models.User]:
     if username is None and tg_id is None and user_guid is None and email is None:
         raise fastapi.HTTPException(status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
                                     detail="no identity specified")
@@ -27,7 +27,6 @@ async def get_user(async_session: AsyncSession, username=None, tg_id=None, user_
     user_query_exec = await async_session.execute(query)
     user = user_query_exec.scalars().one_or_none()
     return user
-
 
 
 async def check_is_user_exists(async_session, user_create):
@@ -51,9 +50,25 @@ async def verify_user(async_session, user_guid):
     user.is_verified = True
 
 
-async def get_users(async_session: AsyncSession) -> List[models.User]:
-    users_resp = await async_session.execute(select(models.User).order_by(models.User.created_at.desc(),
-                                                                          models.User.username))
+def make_search_query(search: str):
+    return ':* | '.join(search.lower().split(' ')) + ':*'
+
+
+async def get_users(async_session: AsyncSession, search: Optional[str], page: int, limit: int) -> List[models.User]:
+    query = select(models.User).order_by(models.User.created_at.desc(), models.User.username)
+    if search is not None and search != '':
+        query = query.filter(
+            func.to_tsvector(models.User.first_name + ' '
+                             + models.User.last_name + ' '
+                             + models.User.email + ' '
+                             + models.User.username
+                             )
+            .op('@@')(
+                func.to_tsquery(make_search_query(search)))
+        )
+    if page is not None and limit is not None:
+        query = query.limit(limit).offset((page - 1) * limit)
+    users_resp = await async_session.execute(query)
     users = list(users_resp.scalars().all())
     return users
 

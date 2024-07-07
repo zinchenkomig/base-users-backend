@@ -56,3 +56,12 @@ class Email(BaseModel):
 class RecoverPassword(BaseModel):
     new_password: str
     token: str
+
+
+class ChangePassword(BaseModel):
+    old_password: str
+    new_password: str
+
+
+class GetUsersRequest(BaseModel):
+    search: Optional[str]
