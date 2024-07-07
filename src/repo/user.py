@@ -1,12 +1,13 @@
+import re
+from typing import List
+from typing import Optional
+
 import fastapi
 from fastapi import HTTPException
 from sqlalchemy import select, delete, update, func
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import db_models as models
-from typing import Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
-import json_schemes
 
 
 async def get_user(async_session: AsyncSession, username=None, tg_id=None, user_guid=None, email=None) -> Optional[
@@ -51,17 +52,20 @@ async def verify_user(async_session, user_guid):
 
 
 def make_search_query(search: str):
-    return ':* | '.join(search.lower().split(' ')) + ':*'
+    pattern = re.compile('[\W_]+')
+    search = pattern.sub(' ', search)
+    search = ':* | '.join(search.lower().split(' ')) + ':*'
+    return search
 
 
 async def get_users(async_session: AsyncSession, search: Optional[str], page: int, limit: int) -> List[models.User]:
     query = select(models.User).order_by(models.User.created_at.desc(), models.User.username)
     if search is not None and search != '':
         query = query.filter(
-            func.to_tsvector(models.User.first_name + ' '
-                             + models.User.last_name + ' '
-                             + models.User.email + ' '
-                             + models.User.username
+            func.to_tsvector(func.coalesce(models.User.first_name, '') + ' '
+                             + func.coalesce(models.User.last_name, '') + ' '
+                             + func.coalesce(models.User.email, '') + ' '
+                             + func.coalesce(models.User.username, '')
                              )
             .op('@@')(
                 func.to_tsquery(make_search_query(search)))
