@@ -36,11 +36,11 @@ class TestRegisterAuthFlow:
 class TestSuperuserRights:
     @pytest.mark.anyio
     async def test_superuser_not_allowed(self, async_client, user_cookie):
-        users_resp = await async_client.get('/superuser/users/all', cookies=user_cookie)
+        users_resp = await async_client.get('/superuser/users', cookies=user_cookie)
         assert users_resp.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
 
     @pytest.mark.anyio
     async def test_superuser_good(self, async_client, superuser_cookie):
-        users_resp = await async_client.get('/superuser/users/all', cookies=superuser_cookie)
+        users_resp = await async_client.get('/superuser/users', cookies=superuser_cookie)
         assert users_resp.status_code == status.HTTP_200_OK
         assert len(users_resp.json()) > 0
