@@ -54,7 +54,7 @@ async def verify_user(async_session, user_guid):
 def make_search_query(search: str):
     pattern = re.compile('[\W_]+')
     search = pattern.sub(' ', search)
-    search = ':* | '.join(search.lower().split(' ')) + ':*'
+    search = ':* | '.join(search.strip().lower().split(' ')) + ':*'
     return search
 
 
