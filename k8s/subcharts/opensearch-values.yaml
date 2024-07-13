@@ -1,8 +1,33 @@
-singleNode: true
+fullnameOverride: "opensearch-cluster-master"
 
-extraEnvs:
-  - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
-    value: xaW4w1NIpl!
+master:
+  masterOnly: false
+  replicaCount: 1
+
+ingest:
+  enabled: false
+
+data:
+  replicaCount: 0
+
+coordinating:
+  replicaCount: 0
+
+security:
+  enabled: true
+  adminPassword: ""
+  logstashPassword: ""
+
+dashboards:
+  password: ""
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+  limits:
+    memory: "3Gi"
+    cpu: "1"
 
 podAnnotations:
   fluentbit.io/exclude: "true"

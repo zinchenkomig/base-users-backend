@@ -4,6 +4,12 @@ rbac:
 logLevel: info
 podLabels:
   appName: fluentbit
+env:
+  - name: OSEARCH_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: opensearch-cluster-master
+        key: opensearch-password
 config:
   filters: |
     [FILTER]
@@ -27,7 +33,7 @@ config:
         Logstash_Format On
         Retry_Limit 2
         HTTP_User admin
-        HTTP_Passwd xaW4w1NIpl!
+        HTTP_Passwd ${OSEARCH_PASSWORD}
         Index kube-logs
         tls        On
         tls.verify Off
@@ -40,7 +46,7 @@ config:
         Logstash_Format On
         Retry_Limit 2
         HTTP_User admin
-        HTTP_Passwd xaW4w1NIpl!
+        HTTP_Passwd ${OSEARCH_PASSWORD}
         Index node
         tls        On
         tls.verify Off

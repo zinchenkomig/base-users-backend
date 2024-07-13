@@ -31,11 +31,10 @@ fluentbit:
 	helm upgrade fluent-bit fluent/fluent-bit -i -f fluentbit-values.yaml
 
 opensearch:
-	helm upgrade osearch opensearch/opensearch -i -f opensearch-values.yaml
+	helm upgrade osearch bitnami/opensearch -i -f opensearch-values.yaml
 
 repos:
 	helm repo add fluent https://fluent.github.io/helm-charts
-	helm repo add opensearch https://opensearch-project.github.io/helm-charts
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts;
 	helm repo add grafana https://grafana.github.io/helm-charts;
 	helm repo add hashicorp https://helm.releases.hashicorp.com;
