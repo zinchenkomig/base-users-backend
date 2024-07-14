@@ -4,28 +4,30 @@ from client import GrafanaClient
 import subprocess
 
 
+def run_cmd(command: str) -> str:
+    return subprocess.run(command,
+                          shell=True, capture_output=True).stdout.decode('utf-8')
+
+
 def get_postgres_password() -> str:
-    return str(subprocess.run('kubectl get secret '
-                              'postgres_svc '
-                              '-o jsonpath="{.data.password}" | base64 -d',
-                              shell=True, capture_output=True).stdout)
+    return run_cmd('kubectl get secret '
+                   'postgres_svc '
+                   '-o jsonpath="{.data.password}" | base64 -d')
 
 
 def get_osearch_password() -> str:
-    return str(subprocess.run('kubectl get secret '
-                              'opensearch-cluster-master '
-                              '-o jsonpath="{.data.opensearch-password}" | base64 -d',
-                              shell=True, capture_output=True).stdout)
+    return run_cmd('kubectl get secret '
+                   'opensearch-cluster-master '
+                   '-o jsonpath="{.data.opensearch-password}" | base64 -d')
 
 
 def get_grafana_password():
-    return str(subprocess.run('kubectl get secret '
-                              'grafana '
-                              '-o jsonpath="{.data.admin-password}" | base64 -d',
-                              shell=True, capture_output=True).stdout)
+    return run_cmd('kubectl get secret '
+                   'grafana '
+                   '-o jsonpath="{.data.admin-password}" | base64 -d')
 
 
-def get_grafana_auth():
+def get_grafana_auth() -> dict:
     passwd = get_grafana_password()
     return {
         'user': 'admin',
@@ -69,4 +71,3 @@ if __name__ == '__main__':
             dash_data['panels'][i]['targets'][j]['datasource']['uid'] = target_uid
 
     grafana.add_dashboard(dash_data)
-
