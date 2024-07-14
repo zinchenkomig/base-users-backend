@@ -18,6 +18,7 @@ from dependencies import AsyncSessionDep, EmailSenderDep
 from json_schemes import UserCreate, UserRead, UserReadTg, UserGUID
 from src.repo import user as user_repo
 from src.roles import Role
+from email_template import registration_template
 
 auth_router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -183,17 +184,11 @@ async def register(user_create: UserCreate, response: Response,
     await async_session.commit()
     await async_session.refresh(user)
     response.status_code = status.HTTP_201_CREATED
+    verification_link = f'{settings.FRONTEND_URL}/verify/{user.guid}'
+    message = registration_template.replace('{{verification_link}}', verification_link)
     sender.send_with_retries(to=user_create.email,
                              subject="Account Created",
-                             message_text=f"""
-                             <html>
-                             <body>
-                             <h2>Hello, Dear Friend!</h2>
-                             <p>To verify your account, please follow the link: {settings.FRONTEND_URL}/verify/{user.guid}
-                             </p>
-                             </body>
-                             </html>
-                             """)
+                             message_text=message)
 
 
 @auth_router.post('/verify')
