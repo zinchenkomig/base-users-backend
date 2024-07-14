@@ -18,7 +18,7 @@ from dependencies import AsyncSessionDep, EmailSenderDep
 from json_schemes import UserCreate, UserRead, UserReadTg, UserGUID
 from src.repo import user as user_repo
 from src.roles import Role
-from email_template import registration_template
+from .email_template import registration_template
 
 auth_router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
