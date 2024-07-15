@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from pydantic import BaseModel
@@ -65,3 +66,14 @@ class ChangePassword(BaseModel):
 
 class GetUsersRequest(BaseModel):
     search: Optional[str]
+
+
+class Tweet(BaseORM):
+    guid: uuid.UUID
+    message: str
+    created_by: UserRead
+    created_at: datetime.datetime
+
+
+class CreateTweet(BaseModel):
+    message: str

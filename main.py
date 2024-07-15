@@ -14,6 +14,7 @@ from src.dependencies import CurrentUserDep
 from src.service.auth import auth_router
 from src.service.superuser import superuser_router
 from src.service.user import user_router
+from src.service.tweets import tweet_router
 from dependencies import AsyncSessionDep
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
@@ -47,6 +48,11 @@ app.include_router(router=superuser_router,
 app.include_router(router=user_router,
                    prefix='/user',
                    tags=['user'])
+
+app.include_router(router=tweet_router,
+                   prefix='/tweets',
+                   tags=['tweets']
+                   )
 
 app.add_route("/metrics", handle_metrics)
 

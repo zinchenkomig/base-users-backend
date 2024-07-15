@@ -1,6 +1,6 @@
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, Boolean, Text, ARRAY, DateTime, func
+from sqlalchemy import Column, Boolean, Text, ARRAY, DateTime, func, ForeignKey
 import uuid
 
 
@@ -22,3 +22,14 @@ class User(Base):
     roles = Column(ARRAY(Text), nullable=True, default=[])
     photo_url = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+
+class Tweet(Base):
+    __tablename__ = 'tweets'
+
+    guid: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    message = Column(Text, nullable=False)
+    created_by_guid = Column(ForeignKey("users.guid"))
+    created_by = relationship("User", lazy="joined")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    is_deleted = Column(Boolean, nullable=False, default=False)

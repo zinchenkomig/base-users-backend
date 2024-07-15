@@ -1,4 +1,3 @@
-import re
 from typing import List
 from typing import Optional
 
@@ -8,6 +7,7 @@ from sqlalchemy import select, delete, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import db_models as models
+from src.utils import make_search_query
 
 
 async def get_user(async_session: AsyncSession, username=None, tg_id=None, user_guid=None, email=None) -> Optional[
@@ -49,13 +49,6 @@ async def verify_user(async_session, user_guid):
     if user is None:
         raise HTTPException(status_code=404)
     user.is_verified = True
-
-
-def make_search_query(search: str):
-    pattern = re.compile('[\W_]+')
-    search = pattern.sub(' ', search)
-    search = ':* | '.join(search.strip().lower().split(' ')) + ':*'
-    return search
 
 
 async def get_users(async_session: AsyncSession, search: Optional[str], page: int, limit: int) -> List[models.User]:
