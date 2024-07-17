@@ -26,6 +26,8 @@ async def get_current_user(async_session: AsyncSessionDep, token=Depends(apikey_
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {fake_user} not found")
         user.roles = fake_roles.split(',')
         return user
+    if token is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No token in cookie or cookie expired")
     try:
         payload = jwt.decode(token, PASSWORD_ENCODING_SECRET, algorithms=[settings.ALGORITHM])
         user_id = payload.get("guid")

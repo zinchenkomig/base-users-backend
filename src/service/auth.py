@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 from copy import copy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any
 from typing import Union
 
@@ -15,7 +15,7 @@ from conf.secrets import PASSWORD_ENCODING_SECRET
 from conf.secrets import tg_secret_token
 from db_models import User
 from dependencies import AsyncSessionDep, EmailSenderDep
-from json_schemes import UserCreate, UserRead, UserReadTg, UserGUID
+from json_schemes import UserCreate, UserRead, UserGUID
 from src.repo import user as user_repo
 from src.roles import Role
 from .email_template import registration_template
@@ -143,7 +143,8 @@ async def auth_tg(response: Response, async_session: AsyncSessionDep, request: D
     response.set_cookie(key='login_token', value=access_token,
                         samesite=settings.SAME_SITE,
                         secure=settings.IS_SECURE_COOKIE,
-                        httponly=settings.IS_SECURE_COOKIE
+                        httponly=settings.IS_SECURE_COOKIE,
+                        expires=datetime.now(tz=timezone.utc) + timedelta(days=360)
                         )
     return user
 
