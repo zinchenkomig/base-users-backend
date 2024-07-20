@@ -9,7 +9,7 @@ from src.dependencies import CurrentUserDep
 tweet_router = APIRouter()
 
 
-@tweet_router.get('/all')
+@tweet_router.get('')
 async def get_tweets(async_session: AsyncSessionDep,
                      page: int = 1, limit: int = 20) -> List[json_schemes.Tweet]:
     return await tweet_repo.get_tweets(async_session, page=page, limit=limit)
