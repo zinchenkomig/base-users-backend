@@ -1,9 +1,11 @@
+from conf import secrets
 from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from utils import comms
+from utils import s3
 from utils.db_connection import AsyncMainSession
 from utils.db_connection_sync import SyncMainSession
 
@@ -35,3 +37,8 @@ def get_email_sender():
 
 AsyncSessionDep = Annotated[AsyncSession, Depends(get_async_session)]
 EmailSenderDep = Annotated[comms.EmailSender, Depends(get_email_sender)]
+S3PublicDep = Annotated[s3.S3Storage, Depends(lambda: s3.S3Storage(endpoint=settings.S3_ENDPOINT,
+                                                                   access_key=secrets.s3_access_key,
+                                                                   secret_key=secrets.s3_secret_key,
+                                                                   bucket_name=settings.BUCKET,
+                                                                   ))]

@@ -33,6 +33,9 @@ fluentbit:
 opensearch:
 	helm upgrade osearch bitnami/opensearch -i -f opensearch-values.yaml
 
+minio:
+	helm upgrade minio oci://registry-1.docker.io/bitnamicharts/minio -i -f minio-values.yaml
+
 repos:
 	helm repo add fluent https://fluent.github.io/helm-charts
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts;

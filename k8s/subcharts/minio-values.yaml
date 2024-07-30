@@ -1,0 +1,18 @@
+
+mode: standalone
+statefulset:
+  replicaCount: 1
+
+ingress:
+  enabled: true
+  hostname: s3.zinchenkomig.com
+
+apiIngress:
+  enabled: true
+  hostname: console.s3.zinchenkomig.com
+
+provisioning:
+  enabled: true
+  buckets:
+    - name: svc-buck
+      withLock: true

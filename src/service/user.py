@@ -1,14 +1,15 @@
 import datetime
+import uuid
 
 import fastapi
 import sqlalchemy.exc
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, UploadFile
 from jose import jwt, ExpiredSignatureError, JWTError
 
 import json_schemes
 from conf import settings
 from conf.secrets import PASSWORD_ENCODING_SECRET
-from dependencies import AsyncSessionDep, EmailSenderDep
+from dependencies import AsyncSessionDep, EmailSenderDep, S3PublicDep
 from json_schemes import UserRead
 from src.dependencies import CurrentUserDep
 from src.repo import user as user_repo
@@ -86,3 +87,13 @@ async def change_password(async_session: AsyncSessionDep, user: CurrentUserDep, 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
     user.password = data.new_password
     await async_session.commit()
+
+
+@user_router.post('/upload_photo')
+async def upload_photo(async_session: AsyncSessionDep, s3: S3PublicDep, user: CurrentUserDep, file: UploadFile):
+    filename = uuid.uuid4()
+    filepath = f'/public/photos/{user.guid}/{filename}'
+    s3.upload_file(filepath, file)
+    user.photo_url = s3.get_file_url(filepath)
+    await async_session.commit()
+

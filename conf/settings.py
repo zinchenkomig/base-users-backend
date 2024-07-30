@@ -16,3 +16,6 @@ GMAIL_API_TOKEN = os.getenv('GMAIL_API_TOKEN', '')
 FRONTEND_URL = os.getenv('BASE_USERS_FRONTEND_URL', 'http://testing.internal:3000')
 
 ALLOWED_ORIGINS = [FRONTEND_URL] if IS_PROD else ['http://localhost:3000', 'http://testing.internal', FRONTEND_URL]
+
+S3_ENDPOINT = os.getenv('BASE_USERS_S3_ENDPOINT', '')
+BUCKET = os.getenv('BASE_USERS_BUCKET', '')
