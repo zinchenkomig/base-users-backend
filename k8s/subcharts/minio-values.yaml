@@ -5,11 +5,11 @@ statefulset:
 
 ingress:
   enabled: true
-  hostname: s3.zinchenkomig.com
+  hostname: console.s3.zinchenkomig.com
 
 apiIngress:
   enabled: true
-  hostname: console.s3.zinchenkomig.com
+  hostname: s3.zinchenkomig.com
 
 provisioning:
   enabled: true
