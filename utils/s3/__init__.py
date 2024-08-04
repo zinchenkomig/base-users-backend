@@ -1,2 +1,2 @@
 
-from .base import S3Storage
+from .base import S3Storage, S3StorageBase

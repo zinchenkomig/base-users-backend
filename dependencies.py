@@ -35,10 +35,16 @@ def get_email_sender():
     return comms.MockSender()
 
 
+def get_s3():
+    if settings.IS_S3_MOCK:
+        return s3.S3Storage(endpoint=settings.S3_ENDPOINT,
+                            access_key=secrets.s3_access_key,
+                            secret_key=secrets.s3_secret_key,
+                            bucket_name=settings.BUCKET,
+                            )
+    return s3.S3StorageBase()
+
+
 AsyncSessionDep = Annotated[AsyncSession, Depends(get_async_session)]
 EmailSenderDep = Annotated[comms.EmailSender, Depends(get_email_sender)]
-S3PublicDep = Annotated[s3.S3Storage, Depends(lambda: s3.S3Storage(endpoint=settings.S3_ENDPOINT,
-                                                                   access_key=secrets.s3_access_key,
-                                                                   secret_key=secrets.s3_secret_key,
-                                                                   bucket_name=settings.BUCKET,
-                                                                   ))]
+S3PublicDep = Annotated[s3.S3Storage, Depends(get_s3)]

@@ -96,4 +96,4 @@ if settings.IS_PROD:
     processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=settings.JAEGER_BACKEND, insecure=True))
     provider.add_span_processor(processor)
     trace.set_tracer_provider(provider)
-    FastAPIInstrumentor.instrument_app(app)
+    FastAPIInstrumentor.instrument_app(app, excluded_urls=".*/metrics,.*/ping")

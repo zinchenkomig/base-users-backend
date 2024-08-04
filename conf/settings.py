@@ -19,3 +19,4 @@ ALLOWED_ORIGINS = [FRONTEND_URL] if IS_PROD else ['http://localhost:3000', 'http
 
 S3_ENDPOINT = os.getenv('BASE_USERS_S3_ENDPOINT', '')
 BUCKET = os.getenv('BASE_USERS_BUCKET', '')
+IS_S3_MOCK = os.getenv('IS_S3_MOCK', '0')
