@@ -1,68 +1,50 @@
+from conf import secrets
 from typing import Annotated
 
-import fastapi
-from fastapi import Depends, HTTPException, status
-from fastapi.security import APIKeyCookie
-from jose import jwt, JWTError, ExpiredSignatureError
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-import db_models as db
+from utils import comms
+from utils import s3
+from utils.db_connection import AsyncMainSession
+from utils.db_connection_sync import SyncMainSession
+
 from conf import settings
-from conf.secrets import PASSWORD_ENCODING_SECRET
-from dependencies import AsyncSessionDep
-from src.repo import user as user_repo
-from src.roles import Role
 
 
-apikey_cookie_getter = APIKeyCookie(name='login_token', auto_error=False)
-
-
-async def get_current_user(async_session: AsyncSessionDep, token=Depends(apikey_cookie_getter),
-                           fake_user: Annotated[str | None, fastapi.Header()] = None,
-                           fake_roles: Annotated[str | None, fastapi.Header()] = None
-                           ) -> db.User:
-    if not settings.IS_PROD and fake_user is not None and fake_roles is not None:
-        user = await user_repo.get_user(async_session, username=fake_user)
-        if user is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {fake_user} not found")
-        user.roles = fake_roles.split(',')
-        return user
-    if token is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No token in cookie or cookie expired")
+async def get_async_session():
+    async_session = AsyncMainSession()
     try:
-        payload = jwt.decode(token, PASSWORD_ENCODING_SECRET, algorithms=[settings.ALGORITHM])
-        user_id = payload.get("guid")
-        if user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not get user from jwt",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    except ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Token signature expired",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except JWTError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"jwt error: {e}",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    user = await user_repo.get_user(async_session, user_guid=user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not get user from user_repo",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return user
-
-CurrentUserDep = Annotated[db.User, Depends(get_current_user)]
+        yield async_session
+    finally:
+        await async_session.close()
 
 
-async def get_current_superuser(current_user: db.User = Depends(get_current_user)):
-    if Role.Admin.value not in current_user.roles:
-        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED)
-    else:
-        return current_user
+# In case of sync testing
+def get_sync_session():
+    session = SyncMainSession()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+def get_email_sender():
+    if settings.IS_PROD:
+        return comms.Gmail(token=settings.GMAIL_API_TOKEN, from_="zinchenkomig.sup@gmail.com")
+    return comms.MockSender()
+
+
+def get_s3():
+    if settings.IS_S3_MOCK:
+        return s3.S3Storage(endpoint=settings.S3_ENDPOINT,
+                            access_key=secrets.s3_access_key,
+                            secret_key=secrets.s3_secret_key,
+                            bucket_name=settings.BUCKET,
+                            )
+    return s3.S3StorageBase()
+
+
+AsyncSessionDep = Annotated[AsyncSession, Depends(get_async_session)]
+EmailSenderDep = Annotated[comms.EmailSender, Depends(get_email_sender)]
+S3PublicDep = Annotated[s3.S3Storage, Depends(get_s3)]

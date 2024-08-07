@@ -6,12 +6,12 @@ import sqlalchemy.exc
 from fastapi import APIRouter, HTTPException, status, UploadFile
 from jose import jwt, ExpiredSignatureError, JWTError
 
-import json_schemes
+from src import json_schemes
 from conf import settings
 from conf.secrets import PASSWORD_ENCODING_SECRET
-from dependencies import AsyncSessionDep, EmailSenderDep, S3PublicDep
-from json_schemes import UserRead
-from src.dependencies import CurrentUserDep
+from src.dependencies import AsyncSessionDep, EmailSenderDep, S3PublicDep
+from src.json_schemes import UserRead
+from src.auth import CurrentUserDep
 from src.repo import user as user_repo
 from src.service import auth
 from src.service.auth import create_access_token, get_password_hash

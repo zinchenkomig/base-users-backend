@@ -11,10 +11,10 @@ class User(Base):
     __tablename__ = 'users'
 
     guid: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    username = Column(Text, nullable=False, default='')
     first_name = Column(Text, nullable=True)
     last_name = Column(Text, nullable=True)
     tg_id = Column(Text, nullable=True)
+    tg_username = Column(Text, nullable=True)
     email = Column(Text, unique=True, nullable=True)
     password = Column(Text, nullable=True)
     is_verified = Column(Boolean, nullable=False, default=False)

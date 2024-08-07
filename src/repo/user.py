@@ -6,20 +6,18 @@ from fastapi import HTTPException
 from sqlalchemy import select, delete, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import db_models as models
+import src.db_models as models
 from src.utils import make_search_query
 
 
-async def get_user(async_session: AsyncSession, username=None, tg_id=None, user_guid=None, email=None) -> Optional[
+async def get_user(async_session: AsyncSession, tg_id=None, user_guid=None, email=None) -> Optional[
     models.User]:
-    if username is None and tg_id is None and user_guid is None and email is None:
+    if tg_id is None and user_guid is None and email is None:
         raise fastapi.HTTPException(status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
                                     detail="no identity specified")
 
     if tg_id is not None:
         query = select(models.User).filter_by(tg_id=tg_id).limit(1)
-    if username is not None:
-        query = select(models.User).filter_by(username=username).limit(1)
     if user_guid is not None:
         query = select(models.User).filter_by(guid=user_guid).limit(1)
     if email is not None:
@@ -32,8 +30,7 @@ async def get_user(async_session: AsyncSession, username=None, tg_id=None, user_
 
 async def check_is_user_exists(async_session, user_create):
     user_query_exec = await async_session.execute(select(models.User)
-                                                  .filter((models.User.username == user_create.username)
-                                                          | (models.User.email == user_create.email)).limit(1))
+                                                  .filter((models.User.email == user_create.email)).limit(1))
     user = user_query_exec.scalars().first()
     return user is not None
 
@@ -52,13 +49,12 @@ async def verify_user(async_session, user_guid):
 
 
 async def get_users(async_session: AsyncSession, search: Optional[str], page: int, limit: int) -> List[models.User]:
-    query = select(models.User).order_by(models.User.created_at.desc(), models.User.username)
+    query = select(models.User).order_by(models.User.created_at.desc())
     if search is not None and search != '':
         query = query.filter(
             func.to_tsvector(func.coalesce(models.User.first_name, '') + ' '
                              + func.coalesce(models.User.last_name, '') + ' '
-                             + func.coalesce(models.User.email, '') + ' '
-                             + func.coalesce(models.User.username, '')
+                             + func.coalesce(models.User.email, '')
                              )
             .op('@@')(
                 func.to_tsquery(make_search_query(search)))

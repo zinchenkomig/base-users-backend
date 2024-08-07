@@ -4,8 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import db_models
-import json_schemes
+from src import db_models
+from src import json_schemes
 
 
 async def get_tweets(async_session: AsyncSession, page: int, limit: int) -> List[db_models.Tweet]:

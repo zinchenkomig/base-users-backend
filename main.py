@@ -10,12 +10,12 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from starlette.middleware.cors import CORSMiddleware
 
 from src.repo.user import get_user
-from src.dependencies import CurrentUserDep
+from src.auth import CurrentUserDep
 from src.service.auth import auth_router
 from src.service.superuser import superuser_router
 from src.service.user import user_router
 from src.service.tweets import tweet_router
-from dependencies import AsyncSessionDep
+from src.dependencies import AsyncSessionDep
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from conf import settings
@@ -60,23 +60,6 @@ app.add_route("/metrics", handle_metrics)
 @app.get('/ping')
 async def ping():
     return 'pong'
-
-
-@app.get('/email')
-async def get_email(user: CurrentUserDep):
-    return user.email
-
-
-@app.get('/check/username')
-async def check_username(username: str, async_session: AsyncSessionDep):
-    user = await get_user(async_session, username=username)
-    return user is not None
-
-
-@app.get('/check/email')
-async def check_username(email: str, async_session: AsyncSessionDep):
-    user = await get_user(async_session, email=email)
-    return user is not None
 
 
 @app.get('/test/logs')

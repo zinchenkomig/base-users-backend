@@ -12,7 +12,6 @@ class BaseORM(BaseModel):
 
 
 class UserCreate(BaseModel):
-    username: str
     email: str
     password: str
 
@@ -23,7 +22,6 @@ class UserGUID(BaseModel):
 
 class UserRead(BaseORM):
     guid: uuid.UUID
-    username: str
     email: Optional[str]
     roles: list[str]
     photo_url: Optional[str]
@@ -32,15 +30,7 @@ class UserRead(BaseORM):
     is_verified: bool
 
 
-class UserReadTg(BaseORM):
-    guid: uuid.UUID
-    username: str
-    roles: list[str]
-
-
 class SuperuserUserUpdate(BaseModel):
-    username: str
-    email: str
     roles: list[str]
 
 

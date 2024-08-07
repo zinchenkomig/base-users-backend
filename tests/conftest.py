@@ -4,8 +4,8 @@ import os
 from httpx import AsyncClient
 from sqlalchemy_utils import drop_database, database_exists, create_database
 
-import dependencies
-import db_models as db
+from src import dependencies
+import src.db_models as db
 from sqlalchemy import create_engine, update
 
 from main import app
@@ -64,44 +64,40 @@ async def async_session():
 
 @pytest.fixture(scope='class')
 async def user_cookie(async_client, async_session):
-    test_username = 'new_test_user'
     test_password = 'test_password'
     test_email = 'testemail@email.com'
-    await async_client.post('/auth/register', json={'username': test_username,
-                                                    'password': test_password,
+    await async_client.post('/auth/register', json={'password': test_password,
                                                     'email': test_email})
 
-    user_query = await async_session.execute(sql.select(db.User).filter_by(username=test_username).limit(1))
+    user_query = await async_session.execute(sql.select(db.User).filter_by(email=test_email).limit(1))
     user = user_query.scalars().one_or_none()
     assert user is not None
 
     verify_response = await async_client.post('/auth/verify', json={'user_guid': str(user.guid)})
     assert verify_response.status_code == 200
 
-    login_response = await async_client.post('/auth/token', data={'username': test_username, 'password': test_password})
+    login_response = await async_client.post('/auth/token', data={'username': test_email, 'password': test_password})
     return login_response.cookies
 
 
 @pytest.fixture(scope='class')
 async def superuser_cookie(async_client, async_session):
-    test_superuser = 'super_user'
     test_password = 'test_password'
     test_email = 'superuser@email.com'
-    await async_client.post('/auth/register', json={'username': test_superuser,
-                                                    'password': test_password,
+    await async_client.post('/auth/register', json={'password': test_password,
                                                     'email': test_email})
-    user_query = await async_session.execute(sql.select(db.User).filter_by(username=test_superuser).limit(1))
+    user_query = await async_session.execute(sql.select(db.User).filter_by(email=test_email).limit(1))
     user = user_query.scalars().one_or_none()
     assert user is not None
 
     verify_response = await async_client.post('/auth/verify', json={'user_guid': str(user.guid)})
     assert verify_response.status_code == 200
 
-    login_response = await async_client.post('/auth/token', data={'username': test_superuser,
+    login_response = await async_client.post('/auth/token', data={'username': test_email,
                                                                   'password': test_password})
     assert login_response.status_code == 200
 
-    await async_session.execute(update(db.User).where(db.User.username == test_superuser).values(roles=['admin']))
+    await async_session.execute(update(db.User).where(db.User.email == test_email).values(roles=['admin']))
     await async_session.commit()
     return login_response.cookies
 

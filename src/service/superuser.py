@@ -3,10 +3,10 @@ from typing import List
 import sqlalchemy.exc
 from fastapi import APIRouter, Depends, HTTPException, status
 
-import json_schemes
-from dependencies import AsyncSessionDep
-from json_schemes import UserRead
-from src.dependencies import get_current_superuser
+from src import json_schemes
+from src.dependencies import AsyncSessionDep
+from src.json_schemes import UserRead
+from src.auth import get_current_superuser
 from src.repo import user as user_repo
 
 # Used here just for swagger integrated login
@@ -30,9 +30,6 @@ async def delete_user(async_session: AsyncSessionDep, guid: str):
 
 @superuser_router.post('/users/update')
 async def update_user(async_session: AsyncSessionDep, guid: str, new_user_params: json_schemes.SuperuserUserUpdate):
-    try:
-        await user_repo.update_user(async_session, update_user_id=guid, new_user_params=new_user_params)
-    except sqlalchemy.exc.IntegrityError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Username conflict')
+    await user_repo.update_user(async_session, update_user_id=guid, new_user_params=new_user_params)
     await async_session.commit()
 

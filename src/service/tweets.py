@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 from typing import List
 
-from dependencies import AsyncSessionDep
-import json_schemes
+from src.dependencies import AsyncSessionDep
+from src import json_schemes
 import src.repo.tweet as tweet_repo
-from src.dependencies import CurrentUserDep
+from src.auth import CurrentUserDep
 
 tweet_router = APIRouter()
 

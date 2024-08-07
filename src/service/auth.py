@@ -13,9 +13,9 @@ from passlib.context import CryptContext
 from conf import settings
 from conf.secrets import PASSWORD_ENCODING_SECRET
 from conf.secrets import tg_secret_token
-from db_models import User
-from dependencies import AsyncSessionDep, EmailSenderDep
-from json_schemes import UserCreate, UserRead, UserGUID
+from src.db_models import User
+from src.dependencies import AsyncSessionDep, EmailSenderDep
+from src.json_schemes import UserCreate, UserRead, UserGUID
 from src.repo import user as user_repo
 from src.roles import Role
 from .email_template import registration_template
@@ -58,8 +58,8 @@ def is_tg_hash_valid(data: dict, tg_bot_token: str):
     return hmac.compare_digest(one.hexdigest(), data_hash)
 
 
-async def authenticate_user(async_session, username: str, password: str) -> Union[User, bool]:
-    user = await user_repo.get_user(async_session, username=username)
+async def authenticate_user(async_session, email: str, password: str) -> Union[User, bool]:
+    user = await user_repo.get_user(async_session, email=email)
     if user is None:
         return False
     if not verify_password(password, user.password):
@@ -87,7 +87,7 @@ async def login_for_access_token(response: Response,
     access_token = create_access_token(
         data={
             "guid": str(user.guid),
-            "login": user.username,
+            "email": user.email,
             "roles": user.roles},
         expires_delta=access_token_expires
     )
@@ -117,12 +117,12 @@ async def auth_tg(response: Response, async_session: AsyncSessionDep, request: D
     last_name = request.get('last_name')
     user = await user_repo.get_user(async_session, tg_id=tg_id)
     if user is None:
-        user = User(username=username,
-                    first_name=first_name,
+        user = User(first_name=first_name,
                     last_name=last_name,
                     email=None,
                     password=None,
                     tg_id=tg_id,
+                    tg_username=username,
                     is_active=True,
                     photo_url=photo_url,
                     roles=[Role.Reader.value],
@@ -137,7 +137,7 @@ async def auth_tg(response: Response, async_session: AsyncSessionDep, request: D
             "guid": str(user.guid),
             "login": username,
             "roles": user.roles
-              },
+        },
         expires_delta=access_token_expires
     )
     response.set_cookie(key='login_token', value=access_token,
@@ -175,8 +175,7 @@ async def register(user_create: UserCreate, response: Response,
         raise HTTPException(status_code=status.HTTP_409_CONFLICT)
 
     hashed_pass = get_password_hash(user_create.password)
-    user = User(username=user_create.username,
-                email=user_create.email,
+    user = User(email=user_create.email,
                 password=hashed_pass,
                 is_verified=False,
                 is_active=True,
@@ -196,3 +195,9 @@ async def register(user_create: UserCreate, response: Response,
 async def verify_user(async_session: AsyncSessionDep, user: UserGUID):
     await user_repo.verify_user(async_session, user.user_guid)
     await async_session.commit()
+
+
+@auth_router.get('/check/email')
+async def check_username(email: str, async_session: AsyncSessionDep):
+    user = await user_repo.get_user(async_session, email=email)
+    return user is not None
