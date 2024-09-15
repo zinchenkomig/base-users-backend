@@ -11,7 +11,13 @@ class BaseORM(BaseModel):
         orm_mode = True
 
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
 class UserCreate(BaseModel):
+    first_name: str
     email: str
     password: str
 

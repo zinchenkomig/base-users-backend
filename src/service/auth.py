@@ -2,7 +2,7 @@ import hashlib
 import hmac
 from copy import copy
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Any
+from typing import Dict, Any, Annotated
 from typing import Union
 
 from fastapi import APIRouter, Response, Depends, HTTPException, status
@@ -15,22 +15,23 @@ from conf.secrets import PASSWORD_ENCODING_SECRET
 from conf.secrets import tg_secret_token
 from src.db_models import User
 from src.dependencies import AsyncSessionDep, EmailSenderDep
-from src.json_schemes import UserCreate, UserRead, UserGUID
+from src.json_schemes import UserCreate, UserRead, UserGUID, Token
 from src.repo import user as user_repo
 from src.roles import Role
 from .email_template import registration_template
+from ..auth import get_user_from_refresh_token
 
 auth_router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_jwt_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "iat": datetime.utcnow()})
     encoded_jwt = jwt.encode(to_encode, PASSWORD_ENCODING_SECRET, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
@@ -67,39 +68,51 @@ async def authenticate_user(async_session, email: str, password: str) -> Union[U
     return user
 
 
-@auth_router.post("/token", response_model=UserRead)
-async def login_for_access_token(response: Response,
-                                 async_session: AsyncSessionDep,
-                                 form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await authenticate_user(async_session, form_data.username, form_data.password)
+def get_jwt_tokens(user: User, response: Response) -> Token:
+    refresh_token = create_jwt_token(data={
+        "sub": str(user.guid)},
+        expires_delta=timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES))
+    response.set_cookie(key='login_token', value=refresh_token,
+                        samesite=settings.SAME_SITE,
+                        secure=settings.IS_SECURE_COOKIE,
+                        httponly=True,
+                        )
+    access_token = create_jwt_token(data={
+        "sub": str(user.guid),
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+        "roles": user.roles,
+    }, expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+
+    return Token(access_token=access_token, token_type="Bearer")
+
+
+@auth_router.post("/login/email", response_model=Token)
+async def login_with_email(response: Response,
+                           async_session: AsyncSessionDep,
+                           form_data: OAuth2PasswordRequestForm = Depends()) -> Token:
+    user = await authenticate_user(async_session, email=form_data.username, password=form_data.password)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not user.is_verified:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="You must first verify user email to login"
         )
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={
-            "guid": str(user.guid),
-            "email": user.email,
-            "roles": user.roles},
-        expires_delta=access_token_expires
-    )
-    response.set_cookie(key='login_token', value=access_token,
-                        samesite=settings.SAME_SITE,
-                        secure=settings.IS_SECURE_COOKIE,
-                        httponly=True,
-                        )
-    return user
+    return get_jwt_tokens(user, response)
 
 
-@auth_router.post("/tg/login", response_model=UserRead)
+@auth_router.post("/access_token", response_model=Token)
+async def get_access_token(response: Response, user: Annotated[User, Depends(get_user_from_refresh_token)]) -> Token:
+    return get_jwt_tokens(user, response)
+
+
+@auth_router.post("/login/tg", response_model=Token)
 async def auth_tg(response: Response, async_session: AsyncSessionDep, request: Dict[Any, Any]):
     if not is_tg_hash_valid(request, tg_secret_token):
         raise HTTPException(
@@ -131,22 +144,7 @@ async def auth_tg(response: Response, async_session: AsyncSessionDep, request: D
         user = await user_repo.new_user(async_session, user)
         await async_session.commit()
         await async_session.refresh(user)
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={
-            "guid": str(user.guid),
-            "login": username,
-            "roles": user.roles
-        },
-        expires_delta=access_token_expires
-    )
-    response.set_cookie(key='login_token', value=access_token,
-                        samesite=settings.SAME_SITE,
-                        secure=settings.IS_SECURE_COOKIE,
-                        httponly=settings.IS_SECURE_COOKIE,
-                        expires=datetime.now(tz=timezone.utc) + timedelta(days=360)
-                        )
-    return user
+    return get_jwt_tokens(user, response)
 
 
 @auth_router.post('/logout')
@@ -176,6 +174,7 @@ async def register(user_create: UserCreate, response: Response,
 
     hashed_pass = get_password_hash(user_create.password)
     user = User(email=user_create.email,
+                first_name=user_create.first_name,
                 password=hashed_pass,
                 is_verified=False,
                 is_active=True,

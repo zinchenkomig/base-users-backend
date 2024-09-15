@@ -11,7 +11,9 @@ class TestRegisterAuthFlow:
         test_password = 'test_password'
         test_email = 'testemail@email.com'
         register_response = await async_client.post('/auth/register', json={'password': test_password,
-                                                                            'email': test_email})
+                                                                            'email': test_email,
+                                                                            'first_name': 'John',
+                                                                            })
         assert register_response.status_code == 201
 
         user_query = await async_session.execute(sql.select(db.User).filter_by(email=test_email).limit(1))
@@ -21,19 +23,19 @@ class TestRegisterAuthFlow:
         verify_response = await async_client.post('/auth/verify', json={'user_guid': str(user.guid)})
         assert verify_response.status_code == 200
 
-        login_response = await async_client.post('/auth/token', data={'username': test_email,
-                                                                      'password': test_password})
+        login_response = await async_client.post('/auth/login/email', data={'username': test_email,
+                                                                            'password': test_password})
         assert login_response.status_code == 200
 
 
 class TestSuperuserRights:
     @pytest.mark.anyio
-    async def test_superuser_not_allowed(self, async_client, user_cookie):
-        users_resp = await async_client.get('/superuser/users', cookies=user_cookie)
+    async def test_superuser_not_allowed(self, async_client, user_access):
+        users_resp = await async_client.get('/superuser/users', headers={'Authorization': user_access})
         assert users_resp.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
 
     @pytest.mark.anyio
-    async def test_superuser_good(self, async_client, superuser_cookie):
-        users_resp = await async_client.get('/superuser/users', cookies=superuser_cookie)
+    async def test_superuser_good(self, async_client, superuser_access):
+        users_resp = await async_client.get('/superuser/users', headers={'Authorization': superuser_access})
         assert users_resp.status_code == status.HTTP_200_OK
         assert len(users_resp.json()) > 0

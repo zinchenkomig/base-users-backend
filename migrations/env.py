@@ -7,7 +7,7 @@ from alembic import context
 # My configuration
 # ------------
 from utils.db_connection_sync import sync_engine
-from db_models import Base
+from src.db_models import Base
 # ------------
 
 # this is the Alembic Config object, which provides

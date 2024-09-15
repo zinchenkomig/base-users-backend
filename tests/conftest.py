@@ -63,11 +63,13 @@ async def async_session():
 
 
 @pytest.fixture(scope='class')
-async def user_cookie(async_client, async_session):
+async def user_access(async_client, async_session):
     test_password = 'test_password'
     test_email = 'testemail@email.com'
     await async_client.post('/auth/register', json={'password': test_password,
-                                                    'email': test_email})
+                                                    'email': test_email,
+                                                    'first_name': 'John',
+                                                    })
 
     user_query = await async_session.execute(sql.select(db.User).filter_by(email=test_email).limit(1))
     user = user_query.scalars().one_or_none()
@@ -76,16 +78,21 @@ async def user_cookie(async_client, async_session):
     verify_response = await async_client.post('/auth/verify', json={'user_guid': str(user.guid)})
     assert verify_response.status_code == 200
 
-    login_response = await async_client.post('/auth/token', data={'username': test_email, 'password': test_password})
-    return login_response.cookies
+    login_response = await async_client.post('/auth/login/email',
+                                             data={'username': test_email, 'password': test_password})
+    access = login_response.json()
+    return 'Bearer ' + access['access_token']
 
 
 @pytest.fixture(scope='class')
-async def superuser_cookie(async_client, async_session):
+async def superuser_access(async_client, async_session):
     test_password = 'test_password'
     test_email = 'superuser@email.com'
-    await async_client.post('/auth/register', json={'password': test_password,
-                                                    'email': test_email})
+    await async_client.post('/auth/register', json={
+        'password': test_password,
+        'email': test_email,
+        'first_name': 'John',
+    })
     user_query = await async_session.execute(sql.select(db.User).filter_by(email=test_email).limit(1))
     user = user_query.scalars().one_or_none()
     assert user is not None
@@ -93,13 +100,14 @@ async def superuser_cookie(async_client, async_session):
     verify_response = await async_client.post('/auth/verify', json={'user_guid': str(user.guid)})
     assert verify_response.status_code == 200
 
-    login_response = await async_client.post('/auth/token', data={'username': test_email,
-                                                                  'password': test_password})
+    login_response = await async_client.post('/auth/login/email', data={'username': test_email,
+                                                                        'password': test_password})
     assert login_response.status_code == 200
 
     await async_session.execute(update(db.User).where(db.User.email == test_email).values(roles=['admin']))
     await async_session.commit()
-    return login_response.cookies
+    access = login_response.json()
+    return 'Bearer ' + access['access_token']
 
 
 @pytest.fixture(scope='class')

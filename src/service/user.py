@@ -14,7 +14,7 @@ from src.json_schemes import UserRead
 from src.auth import CurrentUserDep
 from src.repo import user as user_repo
 from src.service import auth
-from src.service.auth import create_access_token, get_password_hash
+from src.service.auth import create_jwt_token, get_password_hash
 
 user_router = APIRouter()
 
@@ -44,7 +44,7 @@ async def forgot_password(async_session: AsyncSessionDep,
     user = await user_repo.get_user(async_session, email=email_data.email)
     if user is None:
         raise fastapi.HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND)
-    token = create_access_token(data={'user_guid': str(user.guid)}, expires_delta=datetime.timedelta(days=1))
+    token = create_jwt_token(data={'user_guid': str(user.guid)}, expires_delta=datetime.timedelta(days=1))
     email_sender.send_with_retries(to=email_data.email, subject='Password Recovery',
                                    message_text=f"""
                                                                 <html>
