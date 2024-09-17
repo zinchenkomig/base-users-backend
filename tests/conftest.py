@@ -81,7 +81,7 @@ async def user_access(async_client, async_session):
     login_response = await async_client.post('/auth/login/email',
                                              data={'username': test_email, 'password': test_password})
     access = login_response.json()
-    return 'Bearer ' + access['access_token']
+    return {'Authorization': 'Bearer ' + access['access_token']}
 
 
 @pytest.fixture(scope='class')
@@ -107,7 +107,7 @@ async def superuser_access(async_client, async_session):
     await async_session.execute(update(db.User).where(db.User.email == test_email).values(roles=['admin']))
     await async_session.commit()
     access = login_response.json()
-    return 'Bearer ' + access['access_token']
+    return {'Authorization': 'Bearer ' + access['access_token']}
 
 
 @pytest.fixture(scope='class')

@@ -33,7 +33,7 @@ async def update_user(async_session: AsyncSessionDep,
             new_user_params.email = None
         await user_repo.update_user(async_session, update_user_id=current_user.guid, new_user_params=new_user_params)
     except sqlalchemy.exc.IntegrityError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f'db integrity error')
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Duplicated value')
     await async_session.commit()
 
 
