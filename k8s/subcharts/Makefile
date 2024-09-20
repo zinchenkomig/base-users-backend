@@ -33,6 +33,9 @@ fluentbit:
 opensearch:
 	helm upgrade osearch bitnami/opensearch -i -f opensearch-values.yaml
 
+opensearch-dash:
+	helm upgrade os-dashboard opensearch/opensearch-dashboards -i -f osdash-values.yaml
+
 minio:
 	helm upgrade minio oci://registry-1.docker.io/bitnamicharts/minio -i -f minio-values.yaml
 
