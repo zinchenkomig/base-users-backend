@@ -27,7 +27,7 @@ async def get_user_from_refresh_token(async_session: AsyncSessionDep, token=Depe
         user.roles = fake_roles.split(',')
         return user
     if token is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No token in cookie or cookie expired")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized. Please log in.")
     try:
         payload = jwt.decode(token, PASSWORD_ENCODING_SECRET, algorithms=[settings.ALGORITHM])
         user_guid = payload.get("sub")

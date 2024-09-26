@@ -83,6 +83,7 @@ def get_jwt_tokens(user: User, response: Response) -> Token:
         "last_name": user.last_name,
         "email": user.email,
         "roles": user.roles,
+        "photo_url": user.photo_url,
     }, expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
 
     return Token(access_token=access_token, token_type="Bearer")
