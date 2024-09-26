@@ -27,6 +27,8 @@ This is a basic web application. It is supposed to work mainly as a template to 
 - CertManager
 - Minio (S3 buckets).
 
+**I run this whole setup using one VM with 8GB of RAM and 2 CPUs.**
+
 # Web App Preview
 <img src="https://github.com/user-attachments/assets/f9928a73-6590-4560-84a3-adc0b12fd318"/>
 
